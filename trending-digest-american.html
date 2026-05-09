@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Shadows of the Past — US Digest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+  :root {
+    --bg:#080c10;--surface:#0f1318;--card:#141920;--border:#1e2530;
+    --accent-heist:#f0a500;--accent-crime:#e03050;--accent-maritime:#1880d0;
+    --accent-us:#c8102e;--text:#dce8f0;--muted:#5a6878;--green:#28d880;--purple:#8060e8;--radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;padding-bottom:50px}
+  .header{background:linear-gradient(160deg,#0a0e14 0%,#0e1520 60%,#10141c 100%);padding:52px 20px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:-30px;right:-50px;width:220px;height:160px;background:radial-gradient(ellipse,rgba(200,16,46,0.12) 0%,transparent 70%)}
+  .header-flag{font-size:11px;letter-spacing:3px;color:var(--muted);margin-bottom:6px;font-weight:500}
+  .header-title{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;letter-spacing:1px;line-height:1}
+  .header-title span{color:var(--accent-us)}
+  .header-sub{font-size:12px;color:var(--muted);margin-top:6px}
+  .header-tags{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .header-tag{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);border-radius:20px;padding:3px 10px;color:var(--muted)}
+  .api-section{margin:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .api-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
+  .api-header-left{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500}
+  .api-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background 0.3s}
+  .api-dot.active{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .api-chevron{color:var(--muted);font-size:11px;transition:transform 0.2s}
+  .api-chevron.open{transform:rotate(180deg)}
+  .api-body{padding:0 16px 16px;display:none}
+  .api-body.show{display:block}
+  .api-input-wrap{position:relative}
+  .api-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 44px 12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;-webkit-appearance:none}
+  .api-input:focus{border-color:var(--purple)}
+  .api-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px}
+  .api-save{margin-top:10px;width:100%;background:var(--accent-us);border:none;border-radius:10px;padding:12px;color:#fff;font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;cursor:pointer}
+  .api-save:active{opacity:0.8}
+  .api-hint{font-size:11px;color:var(--muted);margin-top:8px;text-align:center}
+  .api-hint a{color:var(--purple)}
+  .mode-section{padding:0 16px 16px}
+  .mode-label-hdr{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;font-weight:600}
+  .mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .mode-tab{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.2s;user-select:none}
+  .mode-tab.full{grid-column:1/-1}
+  .mode-tab.active{border-color:transparent}
+  .mode-tab.heist.active{background:var(--accent-heist);color:#000}
+  .mode-tab.crime.active{background:var(--accent-crime);color:#fff}
+  .mode-tab.maritime.active{background:var(--accent-maritime);color:#fff}
+  .mode-tab.full.active{background:var(--accent-us);color:#fff}
+  .mode-icon{font-size:22px;display:block;margin-bottom:4px}
+  .mode-label-text{font-size:11px;font-weight:600;letter-spacing:0.5px}
+  .email-toggle{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:0 16px 16px;cursor:pointer;user-select:none}
+  .toggle-switch{width:40px;height:22px;background:var(--border);border-radius:11px;position:relative;transition:background 0.2s;flex-shrink:0}
+  .toggle-switch.on{background:var(--green)}
+  .toggle-switch::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s}
+  .toggle-switch.on::after{left:21px}
+  .toggle-text{font-size:13px;font-weight:500;flex:1}
+  .toggle-sub{font-size:11px;color:var(--muted)}
+  .run-btn{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 16px 20px;width:calc(100% - 32px);background:linear-gradient(135deg,var(--accent-us),#8a0020);border:none;border-radius:var(--radius);padding:17px;color:#fff;font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 24px rgba(200,16,46,0.3);transition:opacity 0.2s,transform 0.1s}
+  .run-btn:active{transform:scale(0.98);opacity:0.9}
+  .run-btn:disabled{opacity:0.35;cursor:not-allowed}
+  .loading{display:none;padding:50px 20px;text-align:center}
+  .loading.show{display:block}
+  .spinner{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--accent-us);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-step{font-weight:600;font-size:14px;color:var(--text)}
+  .loading-sub{font-size:12px;color:var(--muted);margin-top:6px}
+  .results{display:none;padding:0 16px}
+  .results.show{display:block}
+  .result-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .result-date{font-size:11px;color:var(--muted)}
+  .result-count{font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+  .section-header{display:flex;align-items:center;gap:10px;margin:22px 0 12px}
+  .section-icon{font-size:18px}
+  .section-title{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:1px}
+  .section-line{flex:1;height:1px;background:var(--border)}
+  .story-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+  .story-card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+  .story-rank{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:var(--muted);line-height:1;flex-shrink:0;width:30px}
+  .story-title-wrap{flex:1}
+  .story-title{font-weight:600;font-size:14px;line-height:1.4;margin-bottom:7px}
+  .story-badges{display:flex;flex-wrap:wrap;gap:5px}
+  .badge{font-size:10px;font-weight:700;letter-spacing:0.5px;border-radius:20px;padding:2px 8px;border:1px solid}
+  .badge-ats{color:var(--green);border-color:var(--green)}
+  .badge-breaking{color:var(--accent-crime);border-color:var(--accent-crime);background:rgba(224,48,80,0.08)}
+  .badge-viral{color:var(--accent-heist);border-color:var(--accent-heist)}
+  .badge-platform{color:var(--muted);border-color:var(--border)}
+  .story-card-body{padding:14px 16px}
+  .us-relevance{background:rgba(200,16,46,0.07);border-left:3px solid var(--accent-us);border-radius:0 8px 8px 0;padding:10px 12px;font-size:12px;line-height:1.5;margin-bottom:14px}
+  .us-relevance-label{font-weight:700;color:var(--accent-us);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+  .angles-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+  .angle{background:var(--surface);border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid var(--border)}
+  .angle-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .angle-num{width:20px;height:20px;border-radius:4px;background:var(--border);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .angle-name{font-size:12px;font-weight:600}
+  .angle-hook{font-size:12px;color:var(--text);font-style:italic;margin-bottom:4px;padding-left:28px;line-height:1.4}
+  .angle-why{font-size:11px;color:var(--muted);padding-left:28px;line-height:1.5}
+  .story-source{font-size:11px;color:var(--muted);padding-top:10px;margin-top:10px;border-top:1px solid var(--border)}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0 8px}
+  .action-btn{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .action-btn:active{background:var(--border)}
+  .action-btn.email-btn{grid-column:1/-1;color:var(--green);border-color:var(--green);background:rgba(40,216,128,0.07)}
+  .error-msg{display:none;margin:0 16px 16px;background:rgba(224,48,80,0.1);border:1px solid var(--accent-crime);border-radius:var(--radius);padding:16px;font-size:13px;color:#ff8090;line-height:1.6}
+  .error-msg.show{display:block}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:#000;font-size:13px;font-weight:700;padding:12px 22px;border-radius:30px;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:999;white-space:nowrap}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-flag">🇺🇸 SHADOWS OF THE PAST</div>
+  <div class="header-title">US TRENDING <span>DIGEST</span></div>
+  <div class="header-sub">Heist · True Crime · Maritime — American Audience Intelligence</div>
+  <div class="header-tags">
+    <span class="header-tag">YouTube</span>
+    <span class="header-tag">TikTok</span>
+    <span class="header-tag">Reddit</span>
+    <span class="header-tag">X / Twitter</span>
+    <span class="header-tag">Google Trends</span>
+  </div>
+</div>
+
+<div class="api-section" style="margin-top:16px">
+  <div class="api-header" onclick="toggleApi()">
+    <div class="api-header-left">
+      <div class="api-dot" id="apiDot"></div>
+      <span id="apiLabel">API Key Required</span>
+    </div>
+    <span class="api-chevron" id="apiChevron">▼</span>
+  </div>
+  <div class="api-body" id="apiBody">
+    <div class="api-input-wrap">
+      <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+      <button class="api-toggle" onclick="toggleVis()">👁</button>
+    </div>
+    <button class="api-save" onclick="saveKey()">SAVE KEY</button>
+    <div class="api-hint">Get your key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
+  </div>
+</div>
+
+<div class="mode-section" style="margin-top:16px">
+  <div class="mode-label-hdr">Select Digest Mode</div>
+  <div class="mode-grid">
+    <div class="mode-tab heist active" data-mode="heist" onclick="selectMode(this)"><span class="mode-icon">💰</span><span class="mode-label-text">HEIST</span></div>
+    <div class="mode-tab crime" data-mode="crime" onclick="selectMode(this)"><span class="mode-icon">🔍</span><span class="mode-label-text">TRUE CRIME</span></div>
+    <div class="mode-tab maritime" data-mode="maritime" onclick="selectMode(this)"><span class="mode-icon">🚢</span><span class="mode-label-text">MARITIME</span></div>
+    <div class="mode-tab full" data-mode="full" onclick="selectMode(this)"><span class="mode-icon">🇺🇸</span><span class="mode-label-text">FULL US DIGEST</span></div>
+  </div>
+</div>
+
+<div class="email-toggle" onclick="toggleEmail()">
+  <div class="toggle-switch" id="emailSwitch"></div>
+  <div>
+    <div class="toggle-text">Email to shadowsofthepast07</div>
+    <div class="toggle-sub">Send to Gmail after generating</div>
+  </div>
+</div>
+
+<button class="run-btn" id="runBtn" onclick="runDigest()">⚡ GENERATE DIGEST</button>
+
+<div class="error-msg" id="errorMsg"></div>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-step" id="stepText">Searching platforms...</div>
+  <div class="loading-sub">YouTube · TikTok · Reddit · X · Google Trends</div>
+</div>
+
+<div class="results" id="results"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+let apiKey = localStorage.getItem('sop_us_key') || '';
+let sendEmail = false;
+let currentMode = 'heist';
+let lastStories = null;
+let apiOpen = !apiKey;
+
+if (apiKey) { document.getElementById('apiKeyInput').value = apiKey; setApiActive(true); }
+if (apiOpen) toggleApi(true);
+
+function toggleApi(force) {
+  apiOpen = force !== undefined ? force : !apiOpen;
+  document.getElementById('apiBody').classList.toggle('show', apiOpen);
+  document.getElementById('apiChevron').classList.toggle('open', apiOpen);
+}
+function setApiActive(on) {
+  document.getElementById('apiDot').classList.toggle('active', on);
+  document.getElementById('apiLabel').textContent = on ? 'API Key Active' : 'API Key Required';
+}
+function toggleVis() {
+  const i = document.getElementById('apiKeyInput');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+function saveKey() {
+  const v = document.getElementById('apiKeyInput').value.trim();
+  if (!v.startsWith('sk-ant-')) { showToast('⚠️ Key must start with sk-ant-', true); return; }
+  apiKey = v;
+  localStorage.setItem('sop_us_key', apiKey);
+  setApiActive(true);
+  toggleApi(false);
+  showToast('✓ API Key saved');
+}
+function toggleEmail() {
+  sendEmail = !sendEmail;
+  document.getElementById('emailSwitch').classList.toggle('on', sendEmail);
+}
+function selectMode(el) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentMode = el.dataset.mode;
+}
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#e03050' : '#28d880';
+  t.style.color = err ? '#fff' : '#000';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function buildPrompt(mode) {
+  const today = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const slots = {
+    heist: '3 Heist & Robbery stories',
+    crime: '3 True Crime stories',
+    maritime: '4 Maritime Disaster stories',
+    full: '3 Heist + 3 True Crime + 4 Maritime stories'
+  };
+  return `You are a US content analyst for "Shadows of the Past" YouTube channel. Today is ${today}.
+
+Generate ${slots[mode]} trending for AMERICAN audiences. Use your knowledge of recent news and viral content.
+
+Return a JSON array. Each object:
+- rank (number)
+- category: "heist" | "crime" | "maritime"
+- title (string)
+- ats (number 1-10, American Trending Score)
+- breaking (boolean)
+- viral (boolean)
+- platforms (string array like ["YouTube","TikTok","Reddit"])
+- usRelevance (string, why Americans care)
+- angles (array of 3 objects: {name, hook, why})
+- source (string)
+
+Return ONLY the raw JSON array. No markdown. No backticks. No text before or after. Start with [ end with ].`;
+}
+
+const steps = ['Analyzing trending content...','Checking viral platforms...','Scoring with ATS algorithm...','Generating viral angles...','Building your digest...'];
+
+async function runDigest() {
+  if (!apiKey) { toggleApi(true); showToast('⚠️ Enter your API key first', true); return; }
+
+  document.getElementById('errorMsg').classList.remove('show');
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('runBtn').disabled = true;
+
+  let si = 0;
+  const stepEl = document.getElementById('stepText');
+  const interval = setInterval(() => { si=(si+1)%steps.length; stepEl.textContent=steps[si]; }, 2000);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: buildPrompt(currentMode) }]
+      })
+    });
+
+    clearInterval(interval);
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status} — check your API key`);
+    }
+
+    const data = await res.json();
+    let allText = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+
+    // 3-strategy JSON extraction
+    let stories = null;
+    const tryParse = str => { try { const r = JSON.parse(str); if (Array.isArray(r) && r.length) return r; } catch {} return null; };
+
+    const s1 = allText.indexOf('['), e1 = allText.lastIndexOf(']');
+    if (s1 !== -1 && e1 > s1) stories = tryParse(allText.slice(s1, e1+1));
+
+    if (!stories) {
+      const clean = allText.replace(/```json|```/gi,'').trim();
+      const s2=clean.indexOf('['), e2=clean.lastIndexOf(']');
+      if (s2!==-1 && e2>s2) stories = tryParse(clean.slice(s2,e2+1));
+    }
+
+    if (!stories) {
+      const m = allText.match(/\[[\s\S]*\]/);
+      if (m) stories = tryParse(m[0]);
+    }
+
+    if (!stories) throw new Error('No valid JSON returned. Raw: ' + allText.substring(0,300));
+
+    lastStories = stories;
+    document.getElementById('loading').classList.remove('show');
+    render(stories);
+    if (sendEmail) await emailDigest(stories);
+
+  } catch(e) {
+    clearInterval(interval);
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('errorMsg').innerHTML = '<strong>Error:</strong> ' + e.message;
+    document.getElementById('errorMsg').classList.add('show');
+  }
+  document.getElementById('runBtn').disabled = false;
+}
+
+function catColor(c){return c==='heist'?'var(--accent-heist)':c==='crime'?'var(--accent-crime)':'var(--accent-maritime)'}
+function catEmoji(c){return c==='heist'?'💰':c==='crime'?'🔍':'🚢'}
+function catLabel(c){return c==='heist'?'HEIST & ROBBERY':c==='crime'?'TRUE CRIME':'MARITIME DISASTER'}
+
+function render(stories) {
+  const el = document.getElementById('results');
+  const now = new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  let html = `<div class="result-meta"><div class="result-date">Generated ${now}</div><div class="result-count">${stories.length} Stories</div></div>`;
+
+  const grouped = {};
+  for (const s of stories) { if (!grouped[s.category]) grouped[s.category]=[]; grouped[s.category].push(s); }
+
+  for (const cat of ['heist','crime','maritime']) {
+    const group = grouped[cat];
+    if (!group?.length) continue;
+    html += `<div class="section-header"><span class="section-icon">${catEmoji(cat)}</span><span class="section-title" style="color:${catColor(cat)}">${catLabel(cat)}</span><div class="section-line"></div></div>`;
+    for (const s of group) {
+      const platforms = (s.platforms||[]).map(p=>`<span class="badge badge-platform">${p}</span>`).join('');
+      const angles = (s.angles||[]).map((a,i)=>`<div class="angle"><div class="angle-row"><div class="angle-num">${i+1}</div><div class="angle-name">${a.name||''}</div></div><div class="angle-hook">"${a.hook||''}"</div><div class="angle-why">${a.why||''}</div></div>`).join('');
+      html += `<div class="story-card"><div class="story-card-header"><div class="story-rank">#${s.rank}</div><div class="story-title-wrap"><div class="story-title">${s.title}</div><div class="story-badges"><span class="badge badge-ats">ATS ${s.ats}/10</span>${s.breaking?'<span class="badge badge-breaking">BREAKING</span>':''}${s.viral?'<span class="badge badge-viral">VIRAL</span>':''}${platforms}</div></div></div><div class="story-card-body"><div class="us-relevance"><div class="us-relevance-label">🇺🇸 US Audience Hook</div>${s.usRelevance||''}</div><div class="angles-label">Viral Angles</div>${angles}${s.source?`<div class="story-source">Source: ${s.source}</div>`:''}</div></div>`;
+    }
+  }
+
+  html += `<div class="actions"><button class="action-btn" onclick="copyText()">📋 Copy</button><button class="action-btn" onclick="shareIt()">🔗 Share</button>${sendEmail?'<button class="action-btn email-btn" onclick="emailAgain()">✉️ Resend to Gmail</button>':''}</div><div style="height:20px"></div>`;
+  el.innerHTML = html;
+  el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function emailDigest(stories) {
+  const today = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  let body = `🇺🇸 US Trending Digest — ${today}\n\n`;
+  for (const s of stories) {
+    body += `#${s.rank} ${s.title}\nATS: ${s.ats}/10 | ${(s.platforms||[]).join(', ')}\n${s.usRelevance}\n`;
+    (s.angles||[]).forEach((a,i)=>{ body+=`\nAngle ${i+1}: ${a.name}\nHook: "${a.hook}"\nWhy: ${a.why}\n`; });
+    body += `\nSource: ${s.source}\n\n${'─'.repeat(40)}\n\n`;
+  }
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001', max_tokens:500,
+        mcp_servers:[{type:'url',url:'https://gmailmcp.googleapis.com/mcp/v1',name:'gmail'}],
+        messages:[{role:'user',content:`Send (not draft) email via Gmail. To: shadowsofthepast07@gmail.com. Subject: "🇺🇸 US Trending Digest — ${today}". Body:\n${body}`}]
+      })
+    });
+    showToast(r.ok ? '✉️ Sent to Gmail!' : '⚠️ Email failed', !r.ok);
+  } catch { showToast('⚠️ Email error', true); }
+}
+
+function emailAgain(){if(lastStories)emailDigest(lastStories)}
+function copyText(){navigator.clipboard.writeText(document.getElementById('results').innerText||'').then(()=>showToast('✓ Copied!')).catch(()=>showToast('⚠️ Copy failed',true))}
+function shareIt(){const text=(document.getElementById('results').innerText||'').substring(0,1000);if(navigator.share)navigator.share({title:'🇺🇸 US Trending Digest',text});else copyText()}
+</script>
+</body>
+</html>
